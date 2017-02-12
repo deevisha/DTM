@@ -4,42 +4,45 @@ import math
 
 tokenize = lambda doc: doc.lower().split(" ")
 
+document_0=open("asianage.txt", 'r').read()
+document_1=open("deccan.txt", 'r').read()
+document_2=open("deccanchronicle.txt", 'r').read()
+document_3=open("dailypioneer.txt", 'r').read()
+document_4=open("economictimes.txt", 'r').read()
+document_5=open("hindustantimes.txt", 'r').read()
+document_6=open("mint.txt", 'r').read()
+document_7=open("newindianexpress.txt", 'r').read()
+document_8=open("telegraph.txt", 'r').read()
+document_9=open("tribuneindia.txt", 'r').read()
+document_10=open("timesofindia.txt", 'r').read()
+document_11=open("query.txt", 'r').read()
 
-document_0=open("finaloutput_asianage1.txt", 'r').read()
-document_1=open("finaloutput_dp1.txt", 'r').read()
-document_2=open("finaloutput_deccan1.txt", 'r').read()
-document_3=open("query.txt", 'r').read()
+all_documents = [document_0, document_1, document_2, document_3, document_4, document_5, document_6, document_7, document_8, document_9,document_10, document_11]
 
-"""document_3=open("finaloutput_asianage.txt", 'r').read()
-document_4=open("finaloutput_asianage.txt", 'r').read()
-document_5=open("finaloutput_asianage.txt", 'r').read()
-document_6=open("finaloutput_asianage.txt", 'r').read()
-document_7=open("finaloutput_asianage.txt", 'r').read()
-document_8=open("finaloutput_asianage.txt", 'r').read()
-document_9=open("finaloutput_asianage.txt", 'r').read()
-document_10=open("query.txt", 'r').read()"""
-
-all_documents = [document_0, document_1, document_2, document_3]
-""", document_4, document_5, document_6, document_7, document_8, document_9,document_10"""
-
-def jaccard_similarity(query, document):
-    intersection = set(query).intersection(set(document))
-    union = set(query).union(set(document))
-    return len(intersection)/len(union)
+dict={0: "asianage",
+	  1: "deccan",
+	  2: "deccanchronicle",
+	  3: "dailypioneer",
+	  4: "economictimes",
+	  5: "hindustantimes",
+	  6: "mint",
+	  7: "newindianexpress",
+	  8: "telegraph",
+	  9: "tribuneindia",
+	  10: "timesofindia"
+}
 
 def term_frequency(term, tokenized_document):
     return tokenized_document.count(term)
+
 #the contribution of term frequency to document relevance is essentially a sub-linear function
 # hence the log to approximate this sub-linear function
+
 def sublinear_term_frequency(term, tokenized_document):
     count = tokenized_document.count(term)
     if count == 0:
         return 0
     return 1 + math.log(count)
-
-def augmented_term_frequency(term, tokenized_document):
-    max_count = max([term_frequency(t, tokenized_document) for t in tokenized_document])
-    return (0.5 + ((0.5 * term_frequency(term, tokenized_document))/max_count))
 
 def inverse_document_frequencies(tokenized_documents):
     idf_values = {}
@@ -75,19 +78,31 @@ def cosine_similarity(vector1, vector2):
 
 
 tfidf_representation = tfidf(all_documents)
-our_tfidf_comparisons = []
+cosine_tfidf_comparisons = []
 
 for count_0, doc_0 in enumerate(tfidf_representation):
-    if count_0==3:
+    if count_0==11:
 		for count_1, doc_1 in enumerate(tfidf_representation):
-			our_tfidf_comparisons.append((cosine_similarity(doc_0, doc_1), count_0, count_1))
+			if count_1!=11:
+				cosine_tfidf_comparisons.append((cosine_similarity(doc_0, doc_1), count_0, count_1))
 
 skl_tfidf_comparisons = []
 
 for count_0, doc_0 in enumerate(sklearn_representation.toarray()):
-    if count_0==3:
+    if count_0==11:
 	    for count_1, doc_1 in enumerate(sklearn_representation.toarray()):
-			skl_tfidf_comparisons.append((cosine_similarity(doc_0, doc_1), count_0, count_1))
+			if count_1!=11:
+				skl_tfidf_comparisons.append((cosine_similarity(doc_0, doc_1), count_0, count_1))
 
-for x in zip(sorted(our_tfidf_comparisons, reverse = True), sorted(skl_tfidf_comparisons, reverse = True)):
+cosine_ranking=sorted(cosine_tfidf_comparisons, reverse=True)
+skl_ranking=sorted(skl_tfidf_comparisons, reverse=True)
+
+for x in zip(cosine_ranking, skl_ranking):
     print x
+
+	
+f=open("ranking.txt","w")
+for element in cosine_ranking[0:5]:
+	doc_number=element[2]
+	f.write(dict[doc_number]+"\n")
+f.close()
